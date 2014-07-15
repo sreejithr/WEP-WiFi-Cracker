@@ -1,8 +1,10 @@
 header() {
+    clear
     echo "========================================\n"
     echo "WEP encrypted Wi-Fi Access Point Cracker\n"
     echo "========================================\n"    
 }
+
 
 select_options() {
     echo "[!] Please select an option below to get started.\n\n"
@@ -11,7 +13,25 @@ select_options() {
     read user_option
     
     # Do according to user's selection
-    if 
+    if [[ "$user_option" = "1" ]];
+        then
+        header
+        scan_and_crack
+    elif [[ "$user_option" = "2" ]];
+        then
+        header
+        crack_access_point
+    fi
+}
+
+
+scan_and_crack() {
+    echo "Scan and crack"
+}
+
+
+crack_access_point() {
+    echo "Crack BSSID"
 }
 
 # Display header and options
