@@ -49,13 +49,16 @@ find_wifi_interface() {
         read interface
     else
         interface=`ifconfig | awk '/wlan.*/ {print $1}'`
-        echo "[+] Found interface '$interface'"
-        echo "[+] Proceeding with '$interface'..."
+        echo "[+] Found interface $interface"
+        echo "[+] Proceeding with $interface..."
+    fi
 }
 
 
 start_interface_in_monitor_mode() {
-    echo "$1"
+    # We pass the interface name as argument. $1 contains that interface name
+    airmon-ng start $1 >/dev/null
+    sleep 2
 }
 
 
