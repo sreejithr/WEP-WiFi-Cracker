@@ -1,3 +1,5 @@
+TMP_AIRODUMP_FILE="airodump.tmp"
+
 header() {
     clear
     echo "========================================\n"
@@ -22,7 +24,7 @@ select_options() {
         echo "[+] Scanning nearby access points..."
         # This makes the user select an access point and sets its BSSID in
         # $required_bssid
-        scan_access_point
+        scan_access_point $interface
         crack_access_point $required_bssid
     elif [[ "$user_option" = "2" ]];
         then
@@ -63,7 +65,11 @@ start_interface_in_monitor_mode() {
 
 
 scan_access_point() {
-    echo "Displaying access points"
+    echo "[+] Using $1 to scan for WEP-protected access points.."
+    echo "[+] Press ENTER to stop scan"
+    airodump-ng $1 | tee /dev/tty >> $TMP_AIRODUMP_FILE &
+    read $enter_key
+    kill -9 "$!"
 }
 
 
