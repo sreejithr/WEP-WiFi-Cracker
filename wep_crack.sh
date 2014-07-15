@@ -6,17 +6,6 @@ header() {
 }
 
 
-scan_access_point() {
-    # TODO
-    echo "Displaying access points"
-}
-
-
-crack_access_point() {
-    # TODO
-}
-
-
 select_options() {
     echo "[!] Please select an option below to get started.\n\n"
     echo "1) Scan access points nearby and crack"
@@ -24,10 +13,13 @@ select_options() {
     echo "\nEnter your option: "
     read user_option
 
+    find_wifi_interface
+    start_interface_in_monitor_mode $interface
+
     if [[ "$user_option" = "1" ]];
         then
         header
-        echo "Scanning nearby access points..."
+        echo "[+] Scanning nearby access points..."
         # This makes the user select an access point and sets its BSSID in
         # $required_bssid
         scan_access_point
@@ -35,21 +27,48 @@ select_options() {
     elif [[ "$user_option" = "2" ]];
         then
         header
-        echo "Enter BSSID of the access point:"
+        echo "[!] Enter BSSID of the access point:"
         read $required_bssid
         crack_access_point $required_bssid
     fi
 }
 
 
-scan_and_crack() {
-    echo "Scan and crack"
+find_wifi_interface() {
+    echo "[+] Looking for interfaces.."
+    interface_count=`ifconfig | awk '/wlan.*/ {print $1}' | wc -w`
+
+    if [[ $interface_count -le 0 ]];
+        then
+        echo "[!] No interfaces found. Manually enter name of interface:"
+        read interface
+    elif [[ $interface_count -ge 2 ]];
+        then
+        echo "[!] Select an interface from:"
+        echo "`ifconfig | awk '/wlan.*/ {print \" \" $1}'`"
+        read interface
+    else
+        interface=`ifconfig | awk '/wlan.*/ {print $1}'`
+        echo "[+] Found interface '$interface'"
+        echo "[+] Proceeding with '$interface'..."
+}
+
+
+start_interface_in_monitor_mode() {
+    echo "$1"
+}
+
+
+scan_access_point() {
+    echo "Displaying access points"
 }
 
 
 crack_access_point() {
-    echo "Crack BSSID"
+    # TODO
+    echo "$1"
 }
+
 
 # Display header and options
 header
