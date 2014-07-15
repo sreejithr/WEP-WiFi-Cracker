@@ -25,13 +25,17 @@ select_options() {
         # This makes the user select an access point and sets its BSSID in
         # $required_bssid
         scan_access_point $interface
-        crack_access_point $required_bssid
+        capture_data $interface $access_point_bssid $access_point_channel
+        crack_access_point
     elif [[ "$user_option" = "2" ]];
         then
         header
         echo "[!] Enter BSSID of the access point:"
-        read $required_bssid
-        crack_access_point $required_bssid
+        read $access_point_bssid
+        echo "[!] Enter channel of the access point:"
+        read $access_point_channel
+        capture_data $interface $access_point_bssid $access_point_channel
+        crack_access_point
     fi
 }
 
@@ -89,14 +93,17 @@ scan_access_point() {
 
     # Extract the BSSID & channel of the access point
     access_point_bssid=`echo $access_point_details | awk '{print $1}'`
-    access_point_channel=`echo $access_point_details | awk '{print $2}'`
-    
+    access_point_channel=`echo $access_point_details | awk '{print $2}'`   
 }
 
 
-crack_access_point() {
-    # TODO
-    echo "$1"
+capture_data() {
+    # Usage is airodump-ng <interface> -bssid <bssid> -c <channel> -w (filename)
+    echo "Capturing data from access point. Let the 'Data' exceed 20000"
+    echo "PRESS ENTER TO STOP CAPTURING.."
+    airodump-ng $1 -bssid $2 -w $TMP_CAPTURE_FILE &
+    read $enter_key
+    kill -9 "$!"
 }
 
 
